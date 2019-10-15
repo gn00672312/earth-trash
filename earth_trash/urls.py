@@ -18,5 +18,5 @@ from earth_trash.map import urls as map
 from django.conf.urls import include
 
 urlpatterns = [
-    path('map/', include(map)),
+    path('', include(map)),
 ]
