@@ -40,13 +40,13 @@ INSTALLED_APPS = (
 
     # your app here
     'earth_trash',
+    'earth_trash.map',
 )
 
 MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -55,7 +55,19 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'earth_trash.urls'
 
-TEMPLATES = []
+
+TEMPLATES = [{
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': [],
+    'APP_DIRS': True,
+    'OPTIONS': {
+        'context_processors': [
+            'django.template.context_processors.debug',
+            'django.template.context_processors.request',
+            'django.contrib.messages.context_processors.messages',
+        ],
+    },
+}]
 
 WSGI_APPLICATION = 'earth_trash.wsgi.application'
 
