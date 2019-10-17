@@ -1,7 +1,11 @@
 import os
 
-# DATABASES = {
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
 
 CACHES = {
     'default': {
@@ -16,9 +20,13 @@ COMPRESS_ENABLED = False
 COMPRESS_OFFLINE = False
 
 APPEND_SLASH = False
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
 # FORCE_SCRIPT_NAME = ""
+
+
+# Honor the 'X-Forwarded-Proto' header for request.is_secure().
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
