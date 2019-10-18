@@ -46,8 +46,9 @@ Vue.config.devtools = true;
 
 const GV = {} || GV
 
-GV.urls = {
-    SATELLITE_TILE_URL: "{{ SATELLITE_TILE_URL }}"
+GV.URLS = {
+    SATELLITE_TILE_URL: "{{ SATELLITE_TILE_URL }}",
+    FETCH_BUOYS_DATA_URL: "{% url 'earth_trash.layer_data:fetch_buoys' %}"
 }
 
 
@@ -56,6 +57,7 @@ window.gds = new Vue({
   delimiters: ["[[", "]]"],
   data: {
     map: null,
+    dt: null
   },
 
   components: {
@@ -63,6 +65,7 @@ window.gds = new Vue({
 
   mounted() {
     this.initMap();
+    {#this.fetch_buoys_data();#}
   },
 
   computed: {
@@ -85,7 +88,7 @@ window.gds = new Vue({
       });
 
       this.map.attributionControl.setPrefix('Power by iEducation');
-      L.tileLayer(GV.urls.SATELLITE_TILE_URL, {
+      L.tileLayer(GV.URLS.SATELLITE_TILE_URL, {
         tileSize: 512,
         zoomOffset: -1,
         minZoom: 1,
@@ -106,6 +109,12 @@ window.gds = new Vue({
         this.map.invalidateSize()
       }
     },
+
+    fetch_buoys_data() {
+      axios.get(GV.URLS.FETCH_BUOYS_DATA_URL, {}).then(rs => {
+        console.log(rs)
+      })
+    }
   },
   watch: {
 
