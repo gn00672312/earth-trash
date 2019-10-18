@@ -32,3 +32,5 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure().
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+SATELLITE_TILE_URL = "https://api.maptiler.com/tiles/satellite-mediumres-2018/{z}/{x}/{y}.jpg?key=iuNpiGjMLsNOU1Omfjby"

@@ -46,6 +46,11 @@ Vue.config.devtools = true;
 
 const GV = {} || GV
 
+GV.urls = {
+    SATELLITE_TILE_URL: "{{ SATELLITE_TILE_URL }}"
+}
+
+
 window.gds = new Vue({
   el: '#app',
   delimiters: ["[[", "]]"],
@@ -80,13 +85,18 @@ window.gds = new Vue({
       });
 
       this.map.attributionControl.setPrefix('Power by iEducation');
-      L.tileLayer('https://api.maptiler.com/tiles/satellite-mediumres-2018/{z}/{x}/{y}.jpg?key=iuNpiGjMLsNOU1Omfjby', {
+      L.tileLayer(GV.urls.SATELLITE_TILE_URL, {
         tileSize: 512,
         zoomOffset: -1,
         minZoom: 1,
         attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">© MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>',
         crossOrigin: true
       }).addTo(this.map);
+
+      this.map.on("mousemove", e => {
+        let _s = sprintf("%0.4f , %0.4f | Power by iEducation", e.latlng.lng, e.latlng.lat);
+        this.map.attributionControl.setPrefix(_s);
+      })
     },
 
     setMapSize() {
