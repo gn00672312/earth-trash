@@ -43,7 +43,8 @@ INSTALLED_APPS = (
     # your app here
     'earth_trash',
     'earth_trash.map',
-    'earth_trash.trash'
+    'earth_trash.trash',
+    'earth_trash.layer_data'
 )
 
 MIDDLEWARE = [
