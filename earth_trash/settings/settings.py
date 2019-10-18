@@ -33,6 +33,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
+    'django.contrib.admin',
+    'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -41,33 +43,37 @@ INSTALLED_APPS = (
     # your app here
     'earth_trash',
     'earth_trash.map',
+    'earth_trash.trash'
 )
 
 MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',
 ]
 
 ROOT_URLCONF = 'earth_trash.urls'
 
-
-TEMPLATES = [{
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [],
-    'APP_DIRS': True,
-    'OPTIONS': {
-        'context_processors': [
-            'django.template.context_processors.debug',
-            'django.template.context_processors.request',
-            'django.contrib.messages.context_processors.messages',
-        ],
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
     },
-}]
+]
 
 WSGI_APPLICATION = 'earth_trash.wsgi.application'
 
@@ -102,8 +108,8 @@ STATICFILES_FINDERS = (
 
 
 STATIC_ROOT = BASE_DIR + '/static'
-# MEDIA_ROOT = BASE_DIR + '/media'
+MEDIA_ROOT = BASE_DIR + '/media'
 
 FORCE_SCRIPT_NAME = ''
 STATIC_URL = FORCE_SCRIPT_NAME + '/static/'
-# MEDIA_URL = FORCE_SCRIPT_NAME + '/media/'
+MEDIA_URL = FORCE_SCRIPT_NAME + '/media/'
