@@ -18,7 +18,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "earth_trash.settings")
 # path for project config
 # Note:
 #   conf/dev is ignore by git, you can create your own dev config under conf/dev
-_MODE = os.environ.get('MODE_ENV', 'prod')
+_MODE = os.environ.get('MODE_ENV', 'dev')
 os.environ["CONF"] = _CONF = os.path.join(BASE_DIR, 'conf', _MODE)
 
 # SECURITY WARNING: keep the secret key used in production secret!
