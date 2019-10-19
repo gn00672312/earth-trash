@@ -50,7 +50,10 @@ window.gds = new Vue({
   delimiters: ["[[", "]]"],
   data: {
     map: null,
-    selected_dt: new Date(2019, 9, 1),
+    dt_range: [new Date(2019, 8, 19), new Date(2019, 9, 18)],
+    selected_dt: new Date(2019, 8, 19),
+    play: false,
+    play_speed: 2000,  //  2 sec
     layers: {
       buoys: {
         data: {},
@@ -107,22 +110,42 @@ window.gds = new Vue({
     },
 
     init_control_panel() {
+
+      // map control panel
       L.control.custom({
         position: 'topleft',
-        content: '<button type="button" class="btn" id="locate_btn">'+
+        content: '<div><button type="button" class="btn control-btn" id="locate_btn">'+
                  '    <i class="fas fa-location-arrow bigger-120"></i>'+
-                 '</button>',
+                 '</button></div>' +
+                 '<div><button type="button" class="btn control-btn" id="play_btn">'+
+                 '    <i class="fas fa-play bigger-120" id="play_ctrl"></i>'+
+                 '</button></div>',
         classes: 'btn-group-vertical btn-group-sm',
         style:{
-          margin: '10px',
+          margin: '12px',
           pading: '0',
           cursor: 'pointer',
         },
         events: {
-          click: data => {
-            this.locate()
+          click: e => {
+            if (e.path.indexOf(document.getElementById('locate_btn')) >= 0) {
+              this.locate()
+            } else if (e.path.indexOf(document.getElementById('play_btn')) >= 0) {
+              this.play = !this.play
+            }
           }
         }
+      }).addTo(this.map);
+
+      // map time
+      L.control.custom({
+       position: 'bottomleft',
+       content: '<div id="dt_desc"> Data Time: ' + this.selected_dt.strftime("%Y-%m-%d")+ '</div>',
+       classes: 'btn-group-vertical btn-group-sm',
+       style:{
+         marginBottom: '20px',
+         padding: '0',
+       },
       }).addTo(this.map);
     },
 
@@ -174,12 +197,58 @@ window.gds = new Vue({
 
     locate() {
       this.map.locate({setView: true, maxZoom: 10});
+    },
+
+    get_dates (startDate, stopDate) {
+      let dateArray = []
+      let currentDate = startDate
+      while (currentDate <= stopDate) {
+        dateArray.push(currentDate)
+        currentDate = currentDate.addDays(1)
+      }
+      return dateArray;
+    },
+
+    carousel() {
+      let dates = this.get_dates(this.dt_range[0], this.dt_range[1])
+
+      let interval = setInterval(() => {
+        if (this.play) {
+          let dt = this.selected_dt
+          let idx = dates.indexOf(dt)
+
+          let next_idx = idx + 1
+          if (next_idx === dates.length) {
+            next_idx = 0
+          }
+          this.selected_dt = dates[next_idx]
+        } else {
+            clearInterval(interval)
+        }
+      }, this.play_speed)
     }
   },
 
   watch: {
     selected_dt () {
       this.fetch_buoys_data()
+
+      let dom_dt_desc = document.getElementById('dt_desc')
+      dom_dt_desc.textContent = 'Data Time: ' + this.selected_dt.strftime("%Y-%m-%d")
+    },
+
+    play() {
+      let play_ctrl_class_list = document.getElementById('play_ctrl').classList
+
+      if (this.play) {
+        play_ctrl_class_list.remove('fa-play')
+        play_ctrl_class_list.add('fa-pause')
+
+        this.carousel()
+      } else {
+        play_ctrl_class_list.remove('fa-pause')
+        play_ctrl_class_list.add('fa-play')
+      }
     }
   },
 });
