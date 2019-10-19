@@ -1,4 +1,4 @@
-{% load staticfiles %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,14 +7,22 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>NASA EARTH TRASH</title>
 
-  <script src ="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.4/vue.js"></script>
-  <script src ="https://unpkg.com/vuex@3.1.1/dist/vuex.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.4/vue.js"></script>
+  <script src="https://unpkg.com/vuex@3.1.1/dist/vuex.js"></script>
   <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.js"></script>
 
-  <script src ="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.js"></script>
-  <script src ="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
+  <script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
+  <script
+  src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+  crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css" />
@@ -41,7 +49,9 @@ const GV = {} || GV
 
 GV.URLS = {
     SATELLITE_TILE_URL: "{{ SATELLITE_TILE_URL }}",
-    FETCH_BUOYS_DATA_URL: "{% url 'earth_trash.layer_data:fetch_buoys' %}"
+    FETCH_BUOYS_DATA_URL: "{% url 'earth_trash.layer_data:fetch_buoys' %}",
+    FETCH_TRASH_RECORDS_URL: "{% url 'earth_trash.trash:fetch_records' %}",
+    TAIWAN_COUNTY_URL: "{% get_media_prefix %}" + 'taiwan_county.json'
 }
 
 
@@ -57,20 +67,43 @@ window.gds = new Vue({
     layers: {
       buoys: {
         data: {},
-        options: {},
+        options: {
+          pointToLayer: function(feature, latlng) {
+            let icon = L.divIcon({className: 'white-dot dot'});
+            return L.marker(latlng, {icon: icon});
+          }
+        },
         cluster: L.markerClusterGroup(),
         layer: null
+      },
+      trash_records: {
+        data: [],
+        options: {
+          icon:  L.icon({
+            iconUrl: '{% static 'map/img/trash_icon.png' %}',
+            iconSize: [60, 60],
+            iconAnchor: [30, 30],
+            popupAnchor: [-25, -25],
+          })
+        },
+        cluster: L.markerClusterGroup({
+            disableClusteringAtZoom: 11
+        }),
       }
-    }
+    },
   },
 
   components: {
+
   },
 
   mounted() {
     this.init_map()
+    this.init_layers()
     this.init_control_panel()
+
     this.fetch_buoys_data()
+    this.fetch_trash_records()
   },
 
   computed: {
@@ -82,11 +115,13 @@ window.gds = new Vue({
       window.onresize = this.set_map_size
 
       this.map = L.map('earth_map', {
-        center: new L.LatLng(24.20, 120.85),
+        center: L.latLng(23, 123),
         zoom: 5,
         maxZoom: 13,
         minZoom: 2,
       });
+
+      {#this.map.locate({setView: true, maxZoom: 5});#}
 
       this.map.attributionControl.setPrefix('Power by iEducation');
       L.tileLayer(GV.URLS.SATELLITE_TILE_URL, {
@@ -105,8 +140,22 @@ window.gds = new Vue({
       this.map.on('locationerror', e => {
         alert(e.message);
       })
+    },
+
+    init_layers() {
+       // load taiwan county
+      axios.get(GV.URLS.TAIWAN_COUNTY_URL).then(rs => {
+        let data = rs.data
+        L.geoJson(data, {
+            color: 'rgb(220,23,26)',
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0
+          }).addTo(this.map)
+      })
 
       this.layers.buoys.cluster.addTo(this.map)
+      this.layers.trash_records.cluster.addTo(this.map)
     },
 
     init_control_panel() {
@@ -119,7 +168,11 @@ window.gds = new Vue({
                  '</button></div>' +
                  '<div><button type="button" class="btn control-btn" id="play_btn">'+
                  '    <i class="fas fa-play bigger-120" id="play_ctrl"></i>'+
-                 '</button></div>',
+                 '</button></div>' +
+                 '<div><button type="button" class="btn control-btn" id="dt_btn">'+
+                 '    <i class="far fa-clock bigger-120" id="dt_ctrl"></i>'+
+                 '</button><div id="dt_selector"></div>' +
+                 '</div>',
         classes: 'btn-group-vertical btn-group-sm',
         style:{
           margin: '12px',
@@ -132,6 +185,26 @@ window.gds = new Vue({
               this.locate()
             } else if (e.path.indexOf(document.getElementById('play_btn')) >= 0) {
               this.play = !this.play
+            } else if (e.path.indexOf(document.getElementById('dt_btn')) >= 0) {
+              let $dt_selector = $('#dt_selector')
+
+              if ($dt_selector.attr('datepicker')) {
+                $dt_selector.datepicker('destroy');
+                $dt_selector.removeAttr('datepicker');
+              } else {
+                $dt_selector.datepicker({
+                  changeYear: false,
+                  dateFormat: 'yy-mm-ddT00:00:00',
+                  minDate: -30,
+                  maxDate: -1,
+                  onSelect: dt_str => {
+                    this.selected_dt = new Date(dt_str)
+                    $dt_selector.datepicker('destroy');
+                    $dt_selector.removeAttr('datepicker');
+                  }
+                });
+                $dt_selector.attr('datepicker', 1);
+              }
             }
           }
         }
@@ -160,12 +233,7 @@ window.gds = new Vue({
     fetch_buoys_data() {
       let dtg = this.selected_dt.strftime("%Y%m%d")
       let data = this.layers.buoys.data[dtg]
-      let layer_opts = {
-        pointToLayer: function(feature, latlng) {
-          let icon = L.divIcon({className: 'white-dot dot'});
-          return L.marker(latlng, {icon: icon});
-        }
-      }
+      let layer_opts = this.layers.buoys.options
 
       if (data) {
         if (this.layers.buoys.layer) {
@@ -195,6 +263,24 @@ window.gds = new Vue({
       }
     },
 
+    fetch_trash_records() {
+
+      let layer_opts = this.layers.trash_records.options
+
+      axios.get(GV.URLS.FETCH_TRASH_RECORDS_URL, {}).then(rs => {
+        if (rs.data.msg === "") {
+          let trash_records = rs.data.data
+          this.layers.trash_records.data = trash_records
+
+          trash_records.forEach(trash_record => {
+            let marker = L.marker([trash_record.latitude, trash_record.longitude], layer_opts)
+            this.layers.trash_records.cluster.addLayer(marker)
+          })
+        }
+      })
+
+    },
+
     locate() {
       this.map.locate({setView: true, maxZoom: 10});
     },
@@ -211,11 +297,10 @@ window.gds = new Vue({
 
     carousel() {
       let dates = this.get_dates(this.dt_range[0], this.dt_range[1])
-
       let interval = setInterval(() => {
         if (this.play) {
           let dt = this.selected_dt
-          let idx = dates.indexOf(dt)
+          let idx = dates.map(Number).indexOf(dt.getTime())
 
           let next_idx = idx + 1
           if (next_idx === dates.length) {

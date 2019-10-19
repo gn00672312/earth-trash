@@ -20,12 +20,14 @@ from django.conf.urls.static import static
 
 from earth_trash.map import urls as map
 from earth_trash.layer_data import urls as layer_data
+from earth_trash.trash import urls as trash
 from django.conf.urls import include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(map)),
-    path('layer_data/', include((layer_data, 'earth_trash.layer_data'), namespace='layer_data'))
+    path('layer_data/', include((layer_data, 'earth_trash.layer_data'), namespace='layer_data')),
+    path('trash/', include((trash, 'earth_trash.trash'), namespace='trash'))
 ]
 
 if settings.DEBUG:

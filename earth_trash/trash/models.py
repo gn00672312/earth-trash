@@ -29,8 +29,8 @@ class TrashRecord(models.Model):
 
     discoverer = models.CharField(max_length=100, null=False, verbose_name='Trash discoverer')
     dtime = models.DateTimeField(null=True, blank=True, default=datetime.now(), verbose_name='Trash discover time')
-    latitude = models.DecimalField(max_digits=7, decimal_places=5, verbose_name='Trash latitude')
-    longitude = models.DecimalField(max_digits=8, decimal_places=5, verbose_name='Trash longitude')
+    latitude = models.DecimalField(max_digits=9, decimal_places=7, verbose_name='Trash latitude')
+    longitude = models.DecimalField(max_digits=10, decimal_places=7, verbose_name='Trash longitude')
     note = models.TextField(null=True, blank=True, verbose_name='note something')
 
     def __str__(self):
@@ -38,6 +38,20 @@ class TrashRecord(models.Model):
         if self.dtime:
             dtg = "_" + self.dtime.strftime("%Y%m%d%H%M")
         return self.discoverer + dtg
+
+    def to_dict(self):
+        return {
+            'discoverer': self.discoverer,
+            'dtime': self.dtime.strftime("%Y-%m-%dT%H:%M:%SZ") if self.dtime else "",
+            'latitude': self.latitude,
+            'longitude': self.longitude,
+            'note': self.note,
+            'garbage': [{
+                'origin': g.origin,
+                'name': g.garbage.name,
+                'photo': g.garbage.photo.url,
+            } for g in self.garbage_types.all()]
+        }
 
 
 class Garbage(models.Model):
@@ -64,4 +78,4 @@ class GarbageOfTrashRecord(models.Model):
                                on_delete=models.deletion.CASCADE, verbose_name='Trash record')
     garbage = models.ForeignKey('Garbage', related_name='record',
                                 on_delete=models.deletion.CASCADE, verbose_name='Garbage types')
-    origin = models.CharField(max_length=100, verbose_name='The place of origin')
+    origin = models.CharField(max_length=100, null=True, blank=True, verbose_name='The place of origin')
