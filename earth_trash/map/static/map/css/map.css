@@ -32,10 +32,22 @@ body {
 }
 
 .white-dot {
-  background: rgb(255, 255, 255);
+  background: white;
+}
+.red-dot {
+  background: red;
+}
+.green-dot {
+  background: green;
+}
+.yellow-dot {
+  background: yellow;
+}
+.brown-dot {
+  background: brown;
 }
 
-#dt_desc {
+.map_info {
   color: white;
   font-size: 20px;
 }

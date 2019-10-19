@@ -50,6 +50,7 @@ class TrashRecord(models.Model):
                 'origin': g.origin,
                 'name': g.garbage.name,
                 'photo': g.garbage.photo.url,
+                'weight': g.garbage.weight
             } for g in self.garbage_types.all()]
         }
 
@@ -79,3 +80,5 @@ class GarbageOfTrashRecord(models.Model):
     garbage = models.ForeignKey('Garbage', related_name='record',
                                 on_delete=models.deletion.CASCADE, verbose_name='Garbage types')
     origin = models.CharField(max_length=100, null=True, blank=True, verbose_name='The place of origin')
+
+    weight = models.FloatField(null=True, blank=True, verbose_name='Garbage weight')

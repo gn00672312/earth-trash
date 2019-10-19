@@ -54,27 +54,52 @@ GV.URLS = {
     TAIWAN_COUNTY_URL: "{% get_media_prefix %}" + 'taiwan_county.json'
 }
 
-
 window.gds = new Vue({
   el: '#app',
   delimiters: ["[[", "]]"],
   data: {
     map: null,
     dt_range: [new Date(2019, 8, 19), new Date(2019, 9, 18)],
-    selected_dt: new Date(2019, 8, 19),
+    selected_dt: new Date(2019, 9, 18),
+    selected_buoy: null,
     play: false,
-    play_speed: 2000,  //  2 sec
+    play_speed: 1000,  //  1 sec
+    countries: [],
     layers: {
       buoys: {
         data: {},
         options: {
           pointToLayer: function(feature, latlng) {
-            let icon = L.divIcon({className: 'white-dot dot'});
+            let icon_class = 'white-dot dot'
+
+            switch (feature.properties.country) {
+              case "UNITED STATES":
+                icon_class = 'red-dot dot'
+                break
+              case "EUROPEAN UNION":
+                icon_class = 'green-dot dot'
+                break
+              case "UNITED KINGDOM":
+                icon_class = 'yellow-dot dot'
+                break
+              case "FRANCE":
+                icon_class = 'brown-dot dot'
+                break
+              default:
+                icon_class = 'white-dot dot'
+                break
+            }
+
+            let icon = L.divIcon({className: icon_class});
             return L.marker(latlng, {icon: icon});
+          },
+          onEachFeature: (feature, layer) => {
+            layer.on('click', e => {
+              window.gds.selected_buoy = feature
+            })
           }
         },
-        cluster: L.markerClusterGroup(),
-        layer: null
+        layer: null,
       },
       trash_records: {
         data: [],
@@ -153,8 +178,6 @@ window.gds = new Vue({
             fillOpacity: 0
           }).addTo(this.map)
       })
-
-      this.layers.buoys.cluster.addTo(this.map)
       this.layers.trash_records.cluster.addTo(this.map)
     },
 
@@ -172,6 +195,9 @@ window.gds = new Vue({
                  '<div><button type="button" class="btn control-btn" id="dt_btn">'+
                  '    <i class="far fa-clock bigger-120" id="dt_ctrl"></i>'+
                  '</button><div id="dt_selector"></div>' +
+                 '<div><button type="button" class="btn control-btn" id="clear_buoy_btn">'+
+                 '    <i class="fas fa-times bigger-120" id="clear_buoy"></i>'+
+                 '</button>' +
                  '</div>',
         classes: 'btn-group-vertical btn-group-sm',
         style:{
@@ -205,6 +231,8 @@ window.gds = new Vue({
                 });
                 $dt_selector.attr('datepicker', 1);
               }
+            } else if (e.path.indexOf(document.getElementById('clear_buoy_btn')) >= 0) {
+              this.selected_buoy = null
             }
           }
         }
@@ -213,7 +241,8 @@ window.gds = new Vue({
       // map time
       L.control.custom({
        position: 'bottomleft',
-       content: '<div id="dt_desc"> Data Time: ' + this.selected_dt.strftime("%Y-%m-%d")+ '</div>',
+       content: '<div class="map_info" id="dt_desc">Data Time: ' + this.selected_dt.strftime("%Y-%m-%d") + '</div>' +
+                '<div class="map_info" id="buoy_desc">Buoy Code: Unselected</div>',
        classes: 'btn-group-vertical btn-group-sm',
        style:{
          marginBottom: '20px',
@@ -234,15 +263,15 @@ window.gds = new Vue({
       let dtg = this.selected_dt.strftime("%Y%m%d")
       let data = this.layers.buoys.data[dtg]
       let layer_opts = this.layers.buoys.options
-
       if (data) {
         if (this.layers.buoys.layer) {
           this.map.removeLayer(this.layers.buoys.layer)
         }
-        this.layers.buoys.layer = L.geoJSON(data, layer_opts).addTo(this.map)
 
-        {#this.layers.buoys.cluster.clearLayers()#}
-        {#this.layers.buoys.cluster.addLayer(L.geoJSON(data, layer_opts))#}
+        data = this.get_country_buoys(data)
+        data = this.filter_selected_buoy(data)
+
+        this.layers.buoys.layer = L.geoJSON(data, layer_opts).addTo(this.map)
       } else {
         let payload = {
           params: {
@@ -252,12 +281,26 @@ window.gds = new Vue({
         axios.get(GV.URLS.FETCH_BUOYS_DATA_URL, payload).then(rs => {
           if (rs.data.msg === "") {
             data = this.layers.buoys.data[dtg] = rs.data.data
+
             if (this.layers.buoys.layer) {
                 this.map.removeLayer(this.layers.buoys.layer)
             }
+
+            data.features.forEach(feature => {
+              let country = feature.properties.country
+              if (this.countries.indexOf(country) === -1) {
+                this.countries.push(country)
+              }
+              // longitude in Pacific Ocean
+              if (feature.geometry.coordinates[0] < -70) {
+                feature.geometry.coordinates[0] += 360
+              }
+            })
+
+            data = this.get_country_buoys(data)
+            data = this.filter_selected_buoy(data)
+
             this.layers.buoys.layer = L.geoJSON(data, layer_opts).addTo(this.map)
-            {#this.layers.buoys.cluster.clearLayers()#}
-            {#this.layers.buoys.cluster.addLayer(L.geoJSON(data, layer_opts))#}
           }
         })
       }
@@ -274,6 +317,10 @@ window.gds = new Vue({
 
           trash_records.forEach(trash_record => {
             let marker = L.marker([trash_record.latitude, trash_record.longitude], layer_opts)
+
+            let $pop_content = $("<div class='pop_content'/>")
+            marker.bindPopup('test')
+
             this.layers.trash_records.cluster.addLayer(marker)
           })
         }
@@ -311,6 +358,29 @@ window.gds = new Vue({
             clearInterval(interval)
         }
       }, this.play_speed)
+    },
+
+    get_country_buoys(data, country) {
+      let country_buoys = $.extend(true, {}, data)
+      if (country) {
+        let features = data.features.filter(f => {
+          return f.properties.country === country
+        })
+        country_buoys.features = features
+      }
+      return country_buoys
+    },
+
+    filter_selected_buoy(data) {
+      let selected_buoy = $.extend(true, {}, data)
+      if (this.selected_buoy) {
+        let features = data.features.filter(f => {
+            return f.properties.platform_code === this.selected_buoy.properties.platform_code
+        })
+        selected_buoy.features = features
+      }
+
+      return selected_buoy
     }
   },
 
@@ -320,6 +390,17 @@ window.gds = new Vue({
 
       let dom_dt_desc = document.getElementById('dt_desc')
       dom_dt_desc.textContent = 'Data Time: ' + this.selected_dt.strftime("%Y-%m-%d")
+    },
+
+    selected_buoy () {
+      this.fetch_buoys_data()
+
+      let dom_buoy_desc = document.getElementById('buoy_desc')
+      let desc = 'Unselected'
+      if (this.selected_buoy) {
+        desc = this.selected_buoy.properties.platform_code + "(" + this.selected_buoy.properties.country + ")"
+      }
+      dom_buoy_desc.textContent = 'Buoy Code: ' + desc
     },
 
     play() {
@@ -334,7 +415,8 @@ window.gds = new Vue({
         play_ctrl_class_list.remove('fa-pause')
         play_ctrl_class_list.add('fa-play')
       }
-    }
+    },
+
   },
 });
 </script>
