@@ -7,17 +7,21 @@ body {
   height: 100%;
 }
 
-#locate_btn {
-    border-radius: 2px;
-    width: 30px;
-    height: 30px;
-    line-height: 30px;
+.control-btn {
+  border-radius: 2px;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
 
-    background: #ffffff;
+  background: #ffffff;
 
-    margin: 2px;
-    border: 0 solid white;
-    padding: 0;
+  border: 1px solid #ddd;
+  padding: 0;
+  cursor: pointer;
+}
+
+.control-btn:hover {
+  background-color: #f4f4f4;
 }
 
 .dot {
@@ -29,4 +33,9 @@ body {
 
 .white-dot {
   background: rgb(255, 255, 255);
+}
+
+#dt_desc {
+  color: white;
+  font-size: 20px;
 }
