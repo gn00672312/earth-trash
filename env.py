@@ -23,5 +23,3 @@ os.environ["CONF"] = _CONF = os.path.join(BASE_DIR, 'conf', _MODE)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 os.environ["SECRET_KEY"] = '^x((h-4k0_&j7tzyjvdy28+o5ehmjxkcp^_6wo=9vyzxyvu%b)'
-from django.utils.crypto import get_random_string
-os.environ["SECRET_KEY"] = get_random_string(50, os.environ["SECRET_KEY"])
