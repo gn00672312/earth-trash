@@ -48,9 +48,9 @@ class TrashRecord(models.Model):
             'note': self.note,
             'garbage': [{
                 'origin': g.origin,
+                'weight': g.weight,
                 'name': g.garbage.name,
                 'photo': g.garbage.photo.url,
-                'weight': g.garbage.weight
             } for g in self.garbage_types.all()]
         }
 

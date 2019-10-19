@@ -146,7 +146,7 @@ window.gds = new Vue({
         minZoom: 2,
       });
 
-      {#this.map.locate({setView: true, maxZoom: 5});#}
+      this.map.locate({setView: true, maxZoom: 5});
 
       this.map.attributionControl.setPrefix('Power by iEducation');
       L.tileLayer(GV.URLS.SATELLITE_TILE_URL, {
@@ -320,7 +320,7 @@ window.gds = new Vue({
 
             let $pop_content = $("<div class='pop_content'/>")
             marker.bindPopup('test')
-
+            console.log(marker)
             this.layers.trash_records.cluster.addLayer(marker)
           })
         }
