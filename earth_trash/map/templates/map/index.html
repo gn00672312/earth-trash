@@ -108,7 +108,7 @@ window.gds = new Vue({
             iconUrl: '{% static 'map/img/trash_icon.png' %}',
             iconSize: [60, 60],
             iconAnchor: [30, 30],
-            popupAnchor: [-25, -25],
+            popupAnchor: [0, -20],
           })
         },
         cluster: L.markerClusterGroup({
@@ -318,9 +318,29 @@ window.gds = new Vue({
           trash_records.forEach(trash_record => {
             let marker = L.marker([trash_record.latitude, trash_record.longitude], layer_opts)
 
-            let $pop_content = $("<div class='pop_content'/>")
-            marker.bindPopup('test')
-            console.log(marker)
+            let $pop_content = $("<div/>").addClass('pop_content')
+            let $discorverer = $("<div/>").text("發現者: " + trash_record.discoverer)
+            let $dtime = $("<div/>").text("發現時間: " + trash_record.dtime)
+            let $note = $("<div/>").text("備註: " + trash_record.note)
+            let $garbage = $("<div/>").text("戰利品")
+            $pop_content.append($discorverer, $dtime, $note, $garbage)
+
+            trash_record.garbage.forEach(garbage => {
+              let $garbage_item = $("<div/>").addClass('garbage_item')
+              let $name = $("<div/>").text("垃圾名稱: " + garbage.name)
+              let $origin = $("<div/>").text("來源地: " + garbage.origin)
+              let $weight = $("<div/>").text("垃圾重量: " + (garbage.weight ? garbage.weight : '-') + '公斤')
+
+              let $photo = $("<img/>").attr('src', garbage.photo)
+
+              $garbage_item.append($name, $origin, $weight, $photo)
+              $garbage.append($garbage_item)
+            })
+
+            marker.bindPopup($pop_content.prop("outerHTML"), {
+              maxWidth: 600,
+              maxHeight: 400
+            })
             this.layers.trash_records.cluster.addLayer(marker)
           })
         }

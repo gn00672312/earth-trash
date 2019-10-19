@@ -51,3 +51,20 @@ body {
   color: white;
   font-size: 20px;
 }
+
+.pop_content {
+  height: 400px;
+  width: 600px;
+  overflow: auto;
+  font-size: 16px;
+}
+
+.garbage_item {
+
+}
+
+.garbage_item > img {
+  text-align: center;
+  width: 250px;
+  height: 250px;
+}
