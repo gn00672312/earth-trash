@@ -64,3 +64,4 @@ class GarbageOfTrashRecord(models.Model):
                                on_delete=models.deletion.CASCADE, verbose_name='Trash record')
     garbage = models.ForeignKey('Garbage', related_name='record',
                                 on_delete=models.deletion.CASCADE, verbose_name='Garbage types')
+    origin = models.CharField(max_length=100, verbose_name='The place of origin')
