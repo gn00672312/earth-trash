@@ -1,4 +1,4 @@
-{% load staticfiles %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,7 +49,8 @@ const GV = {} || GV
 
 GV.URLS = {
     SATELLITE_TILE_URL: "{{ SATELLITE_TILE_URL }}",
-    FETCH_BUOYS_DATA_URL: "{% url 'earth_trash.layer_data:fetch_buoys' %}"
+    FETCH_BUOYS_DATA_URL: "{% url 'earth_trash.layer_data:fetch_buoys' %}",
+    TAIWAN_COUNTY_URL: "{% get_media_prefix %}" + 'taiwan_county.json'
 }
 
 
@@ -113,6 +114,17 @@ window.gds = new Vue({
 
       this.map.on('locationerror', e => {
         alert(e.message);
+      })
+
+      // load taiwan county
+      axios.get(GV.URLS.TAIWAN_COUNTY_URL).then(rs => {
+        let data = rs.data
+        L.geoJson(data, {
+            color: 'rgb(220,23,26)',
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0
+          }).addTo(this.map)
       })
 
       this.layers.buoys.cluster.addTo(this.map)
