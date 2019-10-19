@@ -7,14 +7,22 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>NASA EARTH TRASH</title>
 
-  <script src ="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.4/vue.js"></script>
-  <script src ="https://unpkg.com/vuex@3.1.1/dist/vuex.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.4/vue.js"></script>
+  <script src="https://unpkg.com/vuex@3.1.1/dist/vuex.js"></script>
   <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.js"></script>
 
-  <script src ="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.js"></script>
-  <script src ="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
+  <script
+  src="https://code.jquery.com/jquery-3.4.1.min.js"
+  integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  crossorigin="anonymous"></script>
+  <script
+  src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+  crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.4/leaflet.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css" />
@@ -65,6 +73,7 @@ window.gds = new Vue({
   },
 
   components: {
+
   },
 
   mounted() {
@@ -119,7 +128,11 @@ window.gds = new Vue({
                  '</button></div>' +
                  '<div><button type="button" class="btn control-btn" id="play_btn">'+
                  '    <i class="fas fa-play bigger-120" id="play_ctrl"></i>'+
-                 '</button></div>',
+                 '</button></div>' +
+                 '<div><button type="button" class="btn control-btn" id="dt_btn">'+
+                 '    <i class="far fa-clock bigger-120" id="dt_ctrl"></i>'+
+                 '</button><div id="dt_selector"></div>' +
+                 '</div>',
         classes: 'btn-group-vertical btn-group-sm',
         style:{
           margin: '12px',
@@ -132,6 +145,26 @@ window.gds = new Vue({
               this.locate()
             } else if (e.path.indexOf(document.getElementById('play_btn')) >= 0) {
               this.play = !this.play
+            } else if (e.path.indexOf(document.getElementById('dt_btn')) >= 0) {
+              let $dt_selector = $('#dt_selector')
+
+              if ($dt_selector.attr('datepicker')) {
+                $dt_selector.datepicker('destroy');
+                $dt_selector.removeAttr('datepicker');
+              } else {
+                $dt_selector.datepicker({
+                  changeYear: false,
+                  dateFormat: 'yy-mm-ddT00:00:00',
+                  minDate: -30,
+                  maxDate: -1,
+                  onSelect: dt_str => {
+                    this.selected_dt = new Date(dt_str)
+                    $dt_selector.datepicker('destroy');
+                    $dt_selector.removeAttr('datepicker');
+                  }
+                });
+                $dt_selector.attr('datepicker', 1);
+              }
             }
           }
         }
@@ -211,11 +244,10 @@ window.gds = new Vue({
 
     carousel() {
       let dates = this.get_dates(this.dt_range[0], this.dt_range[1])
-
       let interval = setInterval(() => {
         if (this.play) {
           let dt = this.selected_dt
-          let idx = dates.indexOf(dt)
+          let idx = dates.map(Number).indexOf(dt.getTime())
 
           let next_idx = idx + 1
           if (next_idx === dates.length) {
