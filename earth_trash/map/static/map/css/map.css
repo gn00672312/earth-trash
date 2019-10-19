@@ -52,19 +52,50 @@ body {
   font-size: 20px;
 }
 
+.leaflet-popup-content {
+  padding: 20px !important;
+}
+
+.leaflet-popup-scrolled {
+  border: 0 !important;
+}
+
 .pop_content {
-  height: 400px;
-  width: 600px;
-  overflow: auto;
   font-size: 16px;
+  width: 300px;
+  height: 300px;
+}
+
+.record_location {
+  color: rgb(55, 114, 170);
+  font-size: 28px;
+}
+
+.record_dt {
+  text-align: right;
+  font-size: 14px;
+  color: #444444;
+}
+
+.garbage {
+  width: 300px;
+  height: 85px;
+  overflow: auto;
+}
+
+.garbage_num {
+  font-size: 80px;
+  font-weight: bold;
+  color: rgb(2, 63, 117);
+}
+
+.garbage_icon {
+  width: 30px;
+  height: 30px;
+  margin: 10px;
 }
 
 .garbage_item {
-
-}
-
-.garbage_item > img {
-  text-align: center;
-  width: 250px;
-  height: 250px;
+  width: 80px;
+  height: 80px;
 }
