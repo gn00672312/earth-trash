@@ -50,6 +50,7 @@ const GV = {} || GV
 GV.URLS = {
     SATELLITE_TILE_URL: "{{ SATELLITE_TILE_URL }}",
     FETCH_BUOYS_DATA_URL: "{% url 'earth_trash.layer_data:fetch_buoys' %}",
+    FETCH_TRASH_RECORDS_URL: "{% url 'earth_trash.trash:fetch_records' %}",
     TAIWAN_COUNTY_URL: "{% get_media_prefix %}" + 'taiwan_county.json'
 }
 
@@ -66,11 +67,28 @@ window.gds = new Vue({
     layers: {
       buoys: {
         data: {},
-        options: {},
+        options: {
+          pointToLayer: function(feature, latlng) {
+            let icon = L.divIcon({className: 'white-dot dot'});
+            return L.marker(latlng, {icon: icon});
+          }
+        },
         cluster: L.markerClusterGroup(),
         layer: null
+      },
+      trash_records: {
+        data: [],
+        options: {
+          icon:  L.icon({
+            iconUrl: '{% static 'map/img/trash_icon.png' %}',
+            iconSize: [60, 60],
+            iconAnchor: [30, 30],
+            popupAnchor: [-25, -25],
+          })
+        },
+        cluster: L.markerClusterGroup(),
       }
-    }
+    },
   },
 
   components: {
@@ -79,8 +97,11 @@ window.gds = new Vue({
 
   mounted() {
     this.init_map()
+    this.init_layers()
     this.init_control_panel()
+
     this.fetch_buoys_data()
+    this.fetch_trash_records()
   },
 
   computed: {
@@ -92,11 +113,13 @@ window.gds = new Vue({
       window.onresize = this.set_map_size
 
       this.map = L.map('earth_map', {
-        center: new L.LatLng(24.20, 120.85),
+        center: L.latLng(23, 123),
         zoom: 5,
         maxZoom: 13,
         minZoom: 2,
       });
+
+      {#this.map.locate({setView: true, maxZoom: 5});#}
 
       this.map.attributionControl.setPrefix('Power by iEducation');
       L.tileLayer(GV.URLS.SATELLITE_TILE_URL, {
@@ -115,8 +138,10 @@ window.gds = new Vue({
       this.map.on('locationerror', e => {
         alert(e.message);
       })
+    },
 
-      // load taiwan county
+    init_layers() {
+       // load taiwan county
       axios.get(GV.URLS.TAIWAN_COUNTY_URL).then(rs => {
         let data = rs.data
         L.geoJson(data, {
@@ -128,6 +153,7 @@ window.gds = new Vue({
       })
 
       this.layers.buoys.cluster.addTo(this.map)
+      this.layers.trash_records.cluster.addTo(this.map)
     },
 
     init_control_panel() {
@@ -205,12 +231,7 @@ window.gds = new Vue({
     fetch_buoys_data() {
       let dtg = this.selected_dt.strftime("%Y%m%d")
       let data = this.layers.buoys.data[dtg]
-      let layer_opts = {
-        pointToLayer: function(feature, latlng) {
-          let icon = L.divIcon({className: 'white-dot dot'});
-          return L.marker(latlng, {icon: icon});
-        }
-      }
+      let layer_opts = this.layers.buoys.options
 
       if (data) {
         if (this.layers.buoys.layer) {
@@ -238,6 +259,24 @@ window.gds = new Vue({
           }
         })
       }
+    },
+
+    fetch_trash_records() {
+
+      let layer_opts = this.layers.trash_records.options
+
+      axios.get(GV.URLS.FETCH_TRASH_RECORDS_URL, {}).then(rs => {
+        if (rs.data.msg === "") {
+          let trash_records = rs.data.data
+          this.layers.trash_records.data = trash_records
+
+          trash_records.forEach(trash_record => {
+            let marker = L.marker([trash_record.latitude, trash_record.longitude], layer_opts)
+            this.layers.trash_records.cluster.addLayer(marker)
+          })
+        }
+      })
+
     },
 
     locate() {
