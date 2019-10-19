@@ -86,7 +86,9 @@ window.gds = new Vue({
             popupAnchor: [-25, -25],
           })
         },
-        cluster: L.markerClusterGroup(),
+        cluster: L.markerClusterGroup({
+            disableClusteringAtZoom: 11
+        }),
       }
     },
   },

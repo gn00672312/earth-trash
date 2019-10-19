@@ -29,8 +29,8 @@ class TrashRecord(models.Model):
 
     discoverer = models.CharField(max_length=100, null=False, verbose_name='Trash discoverer')
     dtime = models.DateTimeField(null=True, blank=True, default=datetime.now(), verbose_name='Trash discover time')
-    latitude = models.DecimalField(max_digits=7, decimal_places=5, verbose_name='Trash latitude')
-    longitude = models.DecimalField(max_digits=8, decimal_places=5, verbose_name='Trash longitude')
+    latitude = models.DecimalField(max_digits=9, decimal_places=7, verbose_name='Trash latitude')
+    longitude = models.DecimalField(max_digits=10, decimal_places=7, verbose_name='Trash longitude')
     note = models.TextField(null=True, blank=True, verbose_name='note something')
 
     def __str__(self):
