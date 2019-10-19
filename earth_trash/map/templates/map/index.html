@@ -34,6 +34,17 @@
       width: 100%;
       height: 100%;
     }
+
+    .dot {
+      height: 10px !important;
+      width: 10px !important;
+      border-radius: 6px;
+      border: #444 1px solid;
+    }
+
+    .white-dot {
+      background: rgb(255, 255, 255);
+    }
   </style>
 </head>
 <body>
@@ -57,15 +68,22 @@ window.gds = new Vue({
   delimiters: ["[[", "]]"],
   data: {
     map: null,
-    dt: null
+    dt: new Date(2019, 9, 1),
+    layers: {
+      buoys: {
+        data: {},
+        options: {},
+        layer: null
+      }
+    }
   },
 
   components: {
   },
 
   mounted() {
-    this.initMap();
-    {#this.fetch_buoys_data();#}
+    this.initMap()
+    this.fetch_buoys_data()
   },
 
   computed: {
@@ -81,10 +99,10 @@ window.gds = new Vue({
 
       this.map = L.map('earth_map', {
         center: new L.LatLng(24.20, 120.85),
-        zoom: 6,
+        zoom: 3,
         maxZoom: 13,
         minZoom: 2,
-        maxBounds: L.latLngBounds(southWest, northEast),
+        {#maxBounds: L.latLngBounds(southWest, northEast),#}
       });
 
       this.map.attributionControl.setPrefix('Power by iEducation');
@@ -111,13 +129,39 @@ window.gds = new Vue({
     },
 
     fetch_buoys_data() {
-      axios.get(GV.URLS.FETCH_BUOYS_DATA_URL, {}).then(rs => {
-        console.log(rs)
-      })
+      let dtg = this.dt.strftime("%Y%m%d")
+      let payload = {
+        params: {
+          dtg: dtg,
+        }
+      }
+      let data = this.layers.buoys.data[dtg]
+      if (!this.layers.buoys.data[dtg]) {
+        axios.get(GV.URLS.FETCH_BUOYS_DATA_URL, payload).then(rs => {
+          if (rs.data.msg === "") {
+            data = this.layers.buoys.data[dtg] = rs.data.data
+
+            console.log(data)
+
+            this.layers.buoys.layer = L.geoJSON(data, {
+              pointToLayer: function(feature, latlng) {
+                let icon = L.divIcon({className: 'white-dot dot'});
+                return L.marker(latlng, {icon: icon});
+            }}).addTo(this.map)
+          }
+        })
+      } else {
+        this.layers.buoys.layer.remove()
+
+        this.layers.buoys.layer = L.geoJSON(data, {
+          pointToLayer: function(feature, latlng) {
+            let icon = L.divIcon({className: 'white-dot dot'});
+            return L.marker(latlng, {icon: icon});
+        }}).addTo(this.map)
+      }
     }
   },
   watch: {
-
   },
 });
 </script>
