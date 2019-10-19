@@ -15,7 +15,7 @@ import env
 from django.conf import settings
 
 OSMC_API_URL = ("http://osmc.noaa.gov/erddap/tabledap/OSMC_30day.geoJson?"
-                "latitude,longitude"
+                "latitude,longitude,country,platform_code"
                 "&platform_type=%22DRIFTING BUOYS (GENERIC)%22&"
                 "time={dt}")
 OSMC_COLLECTION_DIR = settings.OSMC_COLLECTION_DIR
