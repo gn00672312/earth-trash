@@ -118,10 +118,6 @@ window.gds = new Vue({
     },
   },
 
-  components: {
-
-  },
-
   mounted() {
     this.init_map()
     this.init_layers()
@@ -131,9 +127,6 @@ window.gds = new Vue({
     this.fetch_trash_records()
   },
 
-  computed: {
-  },
-
   methods: {
     init_map() {
       this.set_map_size()
@@ -141,13 +134,13 @@ window.gds = new Vue({
 
       this.map = L.map('earth_map', {
         center: L.latLng(25.1, 121.4),
-        zoom: 10,
+        zoom: 2,
         maxZoom: 13,
         minZoom: 2,
       });
 
       {% if not DEBUG %}
-      this.map.locate({setView: true, maxZoom: 5});
+      this.map.locate({setView: true, maxZoom: 2});
       {% endif %}
 
       this.map.attributionControl.setPrefix('Power by iEducation');
