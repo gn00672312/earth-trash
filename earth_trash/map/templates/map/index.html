@@ -146,16 +146,11 @@ window.gds = new Vue({
         minZoom: 2,
       });
 
+      {% if not DEBUG %}
       this.map.locate({setView: true, maxZoom: 5});
+      {% endif %}
 
       this.map.attributionControl.setPrefix('Power by iEducation');
-      L.tileLayer(GV.URLS.SATELLITE_TILE_URL, {
-        tileSize: 512,
-        zoomOffset: -1,
-        minZoom: 1,
-        attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">© MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>',
-        crossOrigin: true
-      }).addTo(this.map);
 
       this.map.on("mousemove", e => {
         let _s = sprintf("%0.4f , %0.4f | Power by iEducation", e.latlng.lng, e.latlng.lat);
@@ -168,6 +163,15 @@ window.gds = new Vue({
     },
 
     init_layers() {
+      // add tile.
+      L.tileLayer(GV.URLS.SATELLITE_TILE_URL, {
+    tileSize: 512,
+    zoomOffset: -1,
+    minZoom: 1,
+    attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">© MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>',
+    crossOrigin: true
+  }).addTo(this.map);
+
        // load taiwan county
       axios.get(GV.URLS.TAIWAN_COUNTY_URL).then(rs => {
         let data = rs.data

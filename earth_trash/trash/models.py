@@ -32,6 +32,7 @@ class TrashRecord(models.Model):
     latitude = models.DecimalField(max_digits=9, decimal_places=7, verbose_name='Trash latitude')
     longitude = models.DecimalField(max_digits=10, decimal_places=7, verbose_name='Trash longitude')
     note = models.TextField(null=True, blank=True, verbose_name='note something')
+    location = models.CharField(max_length=100, null=True, verbose_name='Discover location')
 
     def __str__(self):
         dtg = ""
@@ -42,6 +43,7 @@ class TrashRecord(models.Model):
     def to_dict(self):
         return {
             'discoverer': self.discoverer,
+            'location': self.location,
             'dtime': self.dtime.strftime("%Y-%m-%dT%H:%M:%SZ") if self.dtime else "",
             'latitude': self.latitude,
             'longitude': self.longitude,
