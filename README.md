@@ -42,6 +42,7 @@ CORS_ALLOW_CREDENTIALS = True
 ```
 4. set SATELLITE_TILE_URL, but you need to get api key from https://cloud.maptiler.com/.
 
-That's all.
+You don't need to use AWS services in dev enviorment, so remove it!
+That's all. Good Luck!
 
 Power by iEducation.
