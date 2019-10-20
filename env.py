@@ -20,6 +20,3 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "earth_trash.settings")
 #   conf/dev is ignore by git, you can create your own dev config under conf/dev
 _MODE = os.environ.get('MODE_ENV', 'prod')
 os.environ["CONF"] = _CONF = os.path.join(BASE_DIR, 'conf', _MODE)
-
-# SECURITY WARNING: keep the secret key used in production secret!
-os.environ["SECRET_KEY"] = '^x((h-4k0_&j7tzyjvdy28+o5ehmjxkcp^_6wo=9vyzxyvu%b)'
