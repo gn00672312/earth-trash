@@ -56,7 +56,7 @@ SATELLITE_TILE_URL = "https://api.maptiler.com/tiles/satellite-mediumres-2018/{z
 
 You don't need to use AWS services in dev enviorment, so remove it!
 
-After gen `django.settings` file,
+After created `django.settings` file,
 
 run 
 ```
