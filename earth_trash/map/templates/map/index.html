@@ -139,10 +139,6 @@ window.gds = new Vue({
         minZoom: 2,
       });
 
-      {% if not DEBUG %}
-      this.map.locate({setView: true, maxZoom: 2});
-      {% endif %}
-
       this.map.attributionControl.setPrefix('Power by iEducation');
 
       this.map.on("mousemove", e => {
