@@ -6,10 +6,11 @@ demo page: https://earth-trash.herokuapp.com/
 
 technical structure: 
 
-backend: python3.6 / django2.2
-database: AWS RDS
-storage: AWS S3
-deployment server: Heroku
+* backend: `python3.6` / `django2.2`
+* frontend: `Vue.js` / `Leaflet.js` / `jQuery`
+* database: `AWS RDS`
+* storage: `AWS S3`
+* deployment server: `Heroku`
 
 if you want to run this project in dev eviorment, you must add `{project_root}/conf/dev/django.settings` file.
 
