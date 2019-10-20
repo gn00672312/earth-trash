@@ -14,12 +14,21 @@ technical structure:
 
 if you want to run this project in dev eviorment, you must add `{project_root}/conf/dev/django.settings` file.
 
-This file you can copy `{project_root}/conf/prod/django.settings`, bug some settings needs configure.
-
-1. set BASE_DIR.
-2. set DATABASES.
-3. set configument bellow this.
+This file you can copy `{project_root}/conf/prod/django.settings`, or set configument below this.
 ```
+# conf/dev/django.settings
+import os
+
+BASE_DIR = os.environ["BASE_DIR"]
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
@@ -39,10 +48,22 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
 # FORCE_SCRIPT_NAME = ""
+
+# you need to get api key from https://cloud.maptiler.com/.
+SATELLITE_API_KEY = os.environ["SATELLITE_API_KEY"]
+SATELLITE_TILE_URL = "https://api.maptiler.com/tiles/satellite-mediumres-2018/{z}/{x}/{y}.jpg?key=" + SATELLITE_API_KEY
 ```
-4. set SATELLITE_TILE_URL, but you need to get api key from https://cloud.maptiler.com/.
 
 You don't need to use AWS services in dev enviorment, so remove it!
+
+After gen `django.settings` file,
+
+run 
+```
+$ python3 manage.py migrate
+$ python3 runserver 0.0.0.0:8000
+```
+
 That's all. Good Luck!
 
 Power by iEducation.
